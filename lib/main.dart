@@ -1,6 +1,7 @@
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:vj_admin/View/AdminLogin/adminlogin.dart';
+import 'package:vj_admin/splashscreen.dart';
 
 void main() async{
   WidgetsFlutterBinding.ensureInitialized();
@@ -17,7 +18,7 @@ class MyApp extends StatelessWidget {
       title: 'Vijaya Shilpi Admin',
               debugShowCheckedModeBanner: false,
 
-      home: const AdminLogin(),
+      home: const SplashScreen(),
     );
   }
 }

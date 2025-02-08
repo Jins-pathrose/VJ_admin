@@ -26,9 +26,8 @@ class _TeacherScreenState extends State<TeacherScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text("Teachers"),
-        centerTitle: true,
-        backgroundColor: Colors.blueAccent,
+        title: const Text("Teachers",style:TextStyle(color: Colors.white,fontWeight: FontWeight.bold,fontSize: 18),),
+        backgroundColor: const Color.fromARGB(255, 0, 0, 0),
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: () {
@@ -38,8 +37,8 @@ class _TeacherScreenState extends State<TeacherScreen> {
                 builder: (context) => const TeacherRegistration()),
           );
         },
-        backgroundColor: Colors.blueAccent,
-        child: const Icon(Icons.person_add, color: Colors.white),
+        backgroundColor: Colors.amber,
+        child: const Icon(Icons.person_add, color: Color.fromARGB(255, 0, 0, 0)),
       ),
       body: StreamBuilder<QuerySnapshot>(
         stream: _firestore.collection('teachers_registration').snapshots(),

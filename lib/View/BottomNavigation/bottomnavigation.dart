@@ -1,4 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:vj_admin/View/AdminLogin/adminlogin.dart';
 import 'package:vj_admin/View/StudentScreen/studentscreen.dart';
 import 'package:vj_admin/View/Teachers/TeacherScreen/teacherscreen.dart';
 import 'package:vj_admin/View/Teachers/Uploadvideos/uploadedvideos.dart';
@@ -20,40 +23,101 @@ class _BottomNavigationState extends State<BottomNavigation> {
   }
 
   final List<Widget> _screens = [
-AdminsideUploadVideos(),TeacherScreen(), Studentscreen()
+    AdminsideUploadVideos(),
+    TeacherScreen(),
+    Studentscreen()
   ];
+
+  Future<void> _logout() async {
+  final prefs = await SharedPreferences.getInstance();
+  await prefs.clear(); // Clear admin session
+  Navigator.pushAndRemoveUntil(
+    context,
+    MaterialPageRoute(builder: (context) => const AdminLogin()),
+    (route) => false,
+  );
+}
+
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Dashboard', style: TextStyle(color: Colors.white, fontSize: 22, fontWeight: FontWeight.bold)),
-        backgroundColor: const Color.fromARGB(255, 2, 49, 53),
+        automaticallyImplyLeading: false, // Removes the default back button
+        title: Text(
+          'Admin Dashboard',
+          style: GoogleFonts.poppins(
+            fontSize: 22,
+            fontWeight: FontWeight.bold,
+            color: Colors.white,
+          ),
+        ),
+        backgroundColor: const Color.fromARGB(255, 0, 0, 0),
         centerTitle: true,
+        elevation: 4,
+        actions: [
+          Builder(
+            builder: (context) => IconButton(
+              icon: const Icon(Icons.menu, color: Colors.white),
+              onPressed: () => Scaffold.of(context).openDrawer(),
+            ),
+          ),
+        ],
+      ),
+      drawer: Drawer(
+        child: Column(
+          children: [
+            DrawerHeader(
+              decoration: BoxDecoration(
+                color: Color.fromARGB(255, 69, 67, 67),
+              ),
+              child: Center(
+                child: Text(
+                  "Admin Panel",
+                  style: GoogleFonts.poppins(
+                    color: Colors.white,
+                    fontSize: 20,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ),
+            ),
+            ListTile(
+              leading: Icon(Icons.logout, color: Colors.red),
+              title: Text(
+                "Logout",
+                style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
+              ),
+              onTap: _logout,
+            ),
+          ],
+        ),
       ),
       body: AnimatedSwitcher(
-        duration: Duration(milliseconds: 300),
+        duration: const Duration(milliseconds: 0),
+        switchInCurve: Curves.easeInOut,
+        switchOutCurve: Curves.easeInOut,
         child: _screens[_selectedIndex],
       ),
       bottomNavigationBar: BottomNavigationBar(
-        items: const [
-           BottomNavigationBarItem(
-            icon: Icon(Icons.video_collection_outlined),
+        items: [
+          BottomNavigationBarItem(
+            icon: Icon(Icons.video_collection_outlined, size: 28),
             label: 'Videos',
           ),
           BottomNavigationBarItem(
-            icon: Icon(Icons.school),
-            label: 'Teacher',
+            icon: Icon(Icons.school, size: 28),
+            label: 'Teachers',
           ),
           BottomNavigationBarItem(
-            icon: Icon(Icons.person),
-            label: 'Student',
+            icon: Icon(Icons.person, size: 28),
+            label: 'Students',
           ),
         ],
         currentIndex: _selectedIndex,
-        selectedItemColor: Colors.white,
+        selectedItemColor: Colors.amber,
         unselectedItemColor: Colors.white70,
-        backgroundColor: const Color.fromARGB(255, 2, 49, 53),
+        backgroundColor: const Color.fromARGB(255, 0, 0, 0),
         elevation: 10,
         type: BottomNavigationBarType.fixed,
         onTap: _onItemTapped,
