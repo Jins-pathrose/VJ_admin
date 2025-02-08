@@ -28,16 +28,90 @@ class _BottomNavigationState extends State<BottomNavigation> {
     Studentscreen()
   ];
 
-  Future<void> _logout() async {
-  final prefs = await SharedPreferences.getInstance();
-  await prefs.clear(); // Clear admin session
-  Navigator.pushAndRemoveUntil(
-    context,
-    MaterialPageRoute(builder: (context) => const AdminLogin()),
-    (route) => false,
-  );
-}
+  // Future<void> _logout() async {
+  //   final prefs = await SharedPreferences.getInstance();
+  //   await prefs.clear(); // Clear admin session
+  //   Navigator.pushAndRemoveUntil(
+  //     context,
+  //     MaterialPageRoute(builder: (context) => const AdminLogin()),
+  //     (route) => false,
+  //   );
+  // }
 
+  Future<void> _showLogoutDialog() async {
+    return showDialog(
+      context: context,
+      barrierDismissible: false, // Prevent dismissing by tapping outside
+      builder: (BuildContext context) {
+        return AlertDialog(
+          backgroundColor: Colors.white,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(15.0),
+          ),
+          title: Text(
+            'Logout Confirmation',
+            style: GoogleFonts.poppins(
+              fontWeight: FontWeight.bold,
+              color: Colors.black,
+            ),
+          ),
+          content: Text(
+            'Are you sure you want to logout?',
+            style: GoogleFonts.poppins(
+              color: Colors.black87,
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop(); // Close dialog
+              },
+              child: Text(
+                'No',
+                style: GoogleFonts.poppins(
+                  color: Colors.grey,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+            ),
+            TextButton(
+              onPressed: () async {
+                Navigator.of(context).pop(); // Close dialog first
+                try {
+                  final prefs = await SharedPreferences.getInstance();
+                  await prefs.clear(); // Clear admin session
+                  if (mounted) {
+                    Navigator.pushAndRemoveUntil(
+                      context,
+                      MaterialPageRoute(
+                          builder: (context) => const AdminLogin()),
+                      (route) => false, // Remove all previous routes
+                    );
+                  }
+                } catch (e) {
+                  if (mounted) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(
+                        content: Text('Error logging out: $e'),
+                        backgroundColor: Colors.red,
+                      ),
+                    );
+                  }
+                }
+              },
+              child: Text(
+                'Yes',
+                style: GoogleFonts.poppins(
+                  color: Colors.red,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+            ),
+          ],
+        );
+      },
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -88,7 +162,7 @@ class _BottomNavigationState extends State<BottomNavigation> {
                 "Logout",
                 style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
               ),
-              onTap: _logout,
+              onTap: _showLogoutDialog,
             ),
           ],
         ),
