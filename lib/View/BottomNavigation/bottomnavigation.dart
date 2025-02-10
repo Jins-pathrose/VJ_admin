@@ -28,15 +28,7 @@ class _BottomNavigationState extends State<BottomNavigation> {
     Studentscreen()
   ];
 
-  // Future<void> _logout() async {
-  //   final prefs = await SharedPreferences.getInstance();
-  //   await prefs.clear(); // Clear admin session
-  //   Navigator.pushAndRemoveUntil(
-  //     context,
-  //     MaterialPageRoute(builder: (context) => const AdminLogin()),
-  //     (route) => false,
-  //   );
-  // }
+ 
 
   Future<void> _showLogoutDialog() async {
     return showDialog(
@@ -84,7 +76,7 @@ class _BottomNavigationState extends State<BottomNavigation> {
                     Navigator.pushAndRemoveUntil(
                       context,
                       MaterialPageRoute(
-                          builder: (context) => const AdminLogin()),
+                          builder: (context) =>  AdminLogin()),
                       (route) => false, // Remove all previous routes
                     );
                   }
