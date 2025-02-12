@@ -33,12 +33,12 @@ class _TeacherRegistrationState extends State<TeacherRegistration> {
   }
 
   Future<void> _fetchCategories() async {
-    List<String> categories = await _teacherService.fetchCategories(context);
+    List<String> categories = await _teacherService.fetchCategories();
     setState(() => _categories = categories);
   }
 
   Future<void> _fetchSubjects() async {
-    List<String> subjects = await _teacherService.fetchSubjects(context);
+    List<String> subjects = await _teacherService.fetchSubjects();
     setState(() => _subjects = subjects);
   }
 

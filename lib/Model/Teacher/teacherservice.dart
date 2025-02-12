@@ -13,7 +13,7 @@ class TeacherService {
   final Uuid _uuid = const Uuid();
   final http.Client _client = http.Client();
 
-  Future<List<String>> fetchCategories(BuildContext context) async {
+  Future<List<String>> fetchCategories() async {
     try {
       QuerySnapshot querySnapshot =
           await _firestore.collection('categories').get();
@@ -25,7 +25,7 @@ class TeacherService {
     }
   }
 
-  Future<List<String>> fetchSubjects(BuildContext context) async {
+  Future<List<String>> fetchSubjects() async {
     try {
       QuerySnapshot querySnapshot = await _firestore.collection('subject').get();
       return querySnapshot.docs
@@ -203,4 +203,5 @@ class TeacherService {
       throw Exception("Error saving teacher data: $e");
     }
   }
+  
 }

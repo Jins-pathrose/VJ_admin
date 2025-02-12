@@ -1,7 +1,11 @@
 
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter_slidable/flutter_slidable.dart';
+import 'package:vj_admin/Controller/TeacherRegistration/bloc/teacher_reg_bloc.dart';
+import 'package:vj_admin/Controller/TeacherRegistration/bloc/teacher_reg_event.dart';
+import 'package:vj_admin/Controller/TeacherRegistration/bloc/teacher_reg_state.dart';
 import 'package:vj_admin/View/Teachers/TeacherRegistration/teacherregistration.dart';
 import 'package:vj_admin/View/Teachers/TeacherScreen/teacherdetails.dart';
 import 'package:vj_admin/View/Teachers/TeachersEdit/teachersedit.dart';
@@ -14,9 +18,13 @@ class TeacherScreen extends StatefulWidget {
 }
 
 class _TeacherScreenState extends State<TeacherScreen> {
-  final FirebaseFirestore _firestore = FirebaseFirestore.instance;
   final TextEditingController _searchController = TextEditingController();
-  String _searchQuery = '';
+
+  @override
+  void initState() {
+    super.initState();
+    context.read<TeacherBloc>().add(LoadTeachers());
+  }
 
   @override
   void dispose() {
@@ -24,99 +32,77 @@ class _TeacherScreenState extends State<TeacherScreen> {
     super.dispose();
   }
 
-  Future<void> _deleteTeacher(String teacherId) async {
-    await _firestore.collection('teachers_registration').doc(teacherId).delete();
-    ScaffoldMessenger.of(context)
-        .showSnackBar(const SnackBar(content: Text("Teacher deleted successfully")));
-  }
-
-  bool _teacherMatchesSearch(DocumentSnapshot teacher) {
-    final String name = teacher['name'].toString().toLowerCase();
-    final String subject = teacher['subject'].toString().toLowerCase();
-    final String email = teacher['email'].toString().toLowerCase();
-    final query = _searchQuery.toLowerCase();
-
-    return name.contains(query) || subject.contains(query) || email.contains(query);
-  }
-
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text(
-          "Teachers",
-          style: TextStyle(
-              color: Colors.white, fontWeight: FontWeight.bold, fontSize: 18),
-        ),
-        backgroundColor: const Color.fromARGB(255, 0, 0, 0),
-      ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: () {
-          Navigator.push(
-            context,
-            MaterialPageRoute(builder: (context) => const TeacherRegistration()),
-          );
-        },
-        backgroundColor: Colors.amber,
-        child: const Icon(Icons.person_add, color: Color.fromARGB(255, 0, 0, 0)),
-      ),
-      body: Column(
-        children: [
-          Padding(
-            padding: const EdgeInsets.all(16.0),
-            child: TextField(
-              controller: _searchController,
-              decoration: InputDecoration(
-                hintText: 'Search by name, subject, or email...',
-                prefixIcon: const Icon(Icons.search),
-                suffixIcon: _searchQuery.isNotEmpty
-                    ? IconButton(
-                        icon: const Icon(Icons.clear),
-                        onPressed: () {
-                          setState(() {
-                            _searchController.clear();
-                            _searchQuery = '';
-                          });
-                        },
-                      )
-                    : null,
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(10),
-                ),
-                filled: true,
-                fillColor: Colors.grey[100],
-              ),
-              onChanged: (value) {
-                setState(() {
-                  _searchQuery = value;
-                });
-              },
-            ),
+    return BlocListener<TeacherBloc, TeacherState>(
+      listener: (context, state) {
+        if (state is TeacherError) {
+          ScaffoldMessenger.of(context)
+              .showSnackBar(SnackBar(content: Text(state.message)));
+        }
+      },
+      child: Scaffold(
+        appBar: AppBar(
+          title: const Text(
+            "Teachers",
+            style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 18),
           ),
-          Expanded(
-            child: StreamBuilder<QuerySnapshot>(
-              stream: _firestore.collection('teachers_registration').snapshots(),
-              builder: (context, snapshot) {
-                if (snapshot.connectionState == ConnectionState.waiting) {
-                  return const Center(child: CircularProgressIndicator());
-                }
-
-                if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
-                  return const Center(child: Text("No teachers available"));
-                }
-
-                var teachers = snapshot.data!.docs;
-                var filteredTeachers =
-                    teachers.where((teacher) => _teacherMatchesSearch(teacher)).toList();
-
-                if (filteredTeachers.isEmpty) {
-                  return const Center(child: Text("No matching teachers found"));
-                }
-
-                return ListView.builder(
-                  itemCount: filteredTeachers.length,
+          backgroundColor: const Color.fromARGB(255, 0, 0, 0),
+        ),
+        floatingActionButton: FloatingActionButton(
+          onPressed: () {
+            Navigator.push(context, MaterialPageRoute(builder: (context) => const TeacherRegistration()));
+          },
+          backgroundColor: Colors.amber,
+          child: const Icon(Icons.person_add, color: Color.fromARGB(255, 0, 0, 0)),
+        ),
+        body: Column(
+          children: [
+            Padding(
+              padding: const EdgeInsets.all(16.0),
+              child: TextField(
+                controller: _searchController,
+                decoration: InputDecoration(
+                  hintText: 'Search by name, subject, or email...',
+                  prefixIcon: const Icon(Icons.search),
+                  suffixIcon: _searchController.text.isNotEmpty
+                      ? IconButton(
+                          icon: const Icon(Icons.clear),
+                          onPressed: () {
+                            setState(() {
+                              _searchController.clear();
+                              context.read<TeacherBloc>().add(LoadTeachers());
+                            });
+                          },
+                        )
+                      : null,
+                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
+                  filled: true,
+                  fillColor: Colors.grey[100],
+                ),
+                onChanged: (value) {
+                  context.read<TeacherBloc>().add(SearchTeachers(value));
+                },
+              ),
+            ),
+            Expanded(
+              child: BlocBuilder<TeacherBloc, TeacherState>(
+                builder: (context, state) {
+                  if (state is TeacherLoading) {
+                    return const Center(child: CircularProgressIndicator());
+                  }
+                  if (state is TeacherError) {
+                    return Center(child: Text(state.message));
+                  }
+                  if (state is TeacherLoaded) {
+                    if (state.teachers.isEmpty) {
+                      return const Center(child: Text("No teachers available"));
+                    }
+                    
+                    return ListView.builder(
+                  itemCount: state.teachers.length,
                   itemBuilder: (context, index) {
-                    var teacher = filteredTeachers[index];
+                    var teacher = state.teachers[index];
                     String teacherId = teacher.id;
                     String name = teacher['name'];
                     String email = teacher['email'];
@@ -155,7 +141,9 @@ class _TeacherScreenState extends State<TeacherScreen> {
                               label: 'Edit',
                             ),
                             SlidableAction(
-                              onPressed: (context) => _deleteTeacher(teacherId),
+                              onPressed: (context) {
+                                    context.read<TeacherBloc>().add(DeleteTeacher(teacherId));
+                                  },
                               backgroundColor: Colors.red,
                               foregroundColor: Colors.white,
                               icon: Icons.delete,
@@ -177,9 +165,11 @@ class _TeacherScreenState extends State<TeacherScreen> {
                               );
                             },
                             leading: Container(
+                              
                               width: 50,
                               height: 50,
                               child: CircleAvatar(
+                                radius: 100,
                                 backgroundImage: NetworkImage(imageUrl),
                                 backgroundColor: Colors.grey[300],
                               ),
@@ -220,10 +210,13 @@ class _TeacherScreenState extends State<TeacherScreen> {
                     );
                   },
                 );
-              },
+                  }
+                  return Container();
+                },
+              ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }
