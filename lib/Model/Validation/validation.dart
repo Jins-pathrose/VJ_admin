@@ -29,4 +29,14 @@ class ValidationHelper {
     }
     return null;
   }
+
+  static String? validatename(String? value) {
+    if (value == null || value.isEmpty) {
+      return 'Please enter name';
+    }
+    if(value.contains(' ')){
+      return 'Password should not contain spaces';
+    }
+    return null;
+  }
 }

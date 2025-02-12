@@ -137,6 +137,7 @@ import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:chewie/chewie.dart';
 import 'package:video_player/video_player.dart';
+import 'package:vj_admin/View/Teachers/Uploadvideos/videodetails.dart';
 
 class AdminsideUploadVideos extends StatefulWidget {
   const AdminsideUploadVideos({super.key});
@@ -200,7 +201,10 @@ class _AdminsideUploadVideosState extends State<AdminsideUploadVideos> {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Uploaded Videos',
-            style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 18)),
+            style: TextStyle(
+                color: Colors.white,
+                fontWeight: FontWeight.bold,
+                fontSize: 18)),
         backgroundColor: const Color.fromARGB(255, 0, 0, 0),
         elevation: 10,
       ),
@@ -233,7 +237,18 @@ class _AdminsideUploadVideosState extends State<AdminsideUploadVideos> {
                 ),
                 child: InkWell(
                   borderRadius: BorderRadius.circular(15),
-                  onTap: () => _playVideo(data['video_url']),
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => VideoDetailsPage(
+                          videoId: doc.id,
+                          videoUrl: data['video_url'],
+                          teacherUuid: data['teacher_uuid'],
+                        ),
+                      ),
+                    );
+                  },
                   child: Padding(
                     padding: const EdgeInsets.all(12),
                     child: Row(
@@ -247,7 +262,8 @@ class _AdminsideUploadVideosState extends State<AdminsideUploadVideos> {
                             child: Image.network(
                               data['thumbnail_url'],
                               fit: BoxFit.cover,
-                              loadingBuilder: (context, child, loadingProgress) {
+                              loadingBuilder:
+                                  (context, child, loadingProgress) {
                                 if (loadingProgress == null) return child;
                                 return const Center(
                                     child: CircularProgressIndicator());
